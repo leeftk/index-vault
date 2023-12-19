@@ -20,10 +20,10 @@ Allocation[] public allocations;
 ```
 
 
-### whitelist
+### Allowlist
 
 ```solidity
-mapping(address => bool) public whitelist;
+mapping(address => bool) public Allowlist;
 ```
 
 
@@ -49,11 +49,11 @@ receive() external payable;
 function setAllocations(Allocation[] calldata newAllocations) external onlyOwner;
 ```
 
-### addToWhitelist
+### addToAllowlist
 
 
 ```solidity
-function addToWhitelist(address token) external onlyOwner;
+function addToAllowlist(address token) external onlyOwner;
 ```
 
 ### deposit
@@ -72,7 +72,7 @@ function purchaseTokens(uint256 amountETH) internal;
 
 ### swapETHForTokens
 
-
+https://github.com/leeftk/index-vault 
 ```solidity
 function swapETHForTokens(address token, uint256 amountETH, uint256 amountOutMin) internal;
 ```
