@@ -1,66 +1,89 @@
-## Foundry
+# AIVault
+[Git Source](https://github.com/leeftk/index-vault/blob/cc48d1747629c1c903833a7709a28c4102ed65a2/src/IndexVault.sol)
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+**Inherits:**
+ERC4626, Ownable
 
-Foundry consists of:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## State Variables
+### uniswapRouter
 
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```solidity
+IUniswapV2Router02 uniswapRouter;
 ```
 
-### Test
 
-```shell
-$ forge test
+### allocations
+
+```solidity
+Allocation[] public allocations;
 ```
 
-### Format
 
-```shell
-$ forge fmt
+### whitelist
+
+```solidity
+mapping(address => bool) public whitelist;
 ```
 
-### Gas Snapshots
 
-```shell
-$ forge snapshot
+## Functions
+### constructor
+
+
+```solidity
+constructor(IERC20 asset, address _uniswapRouterAddress) ERC4626(asset);
 ```
 
-### Anvil
+### receive
 
-```shell
-$ anvil
+
+```solidity
+receive() external payable;
 ```
 
-### Deploy
+### setAllocations
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+
+```solidity
+function setAllocations(Allocation[] calldata newAllocations) external onlyOwner;
 ```
 
-### Cast
+### addToWhitelist
 
-```shell
-$ cast <subcommand>
+
+```solidity
+function addToWhitelist(address token) external onlyOwner;
 ```
 
-### Help
+### deposit
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+
+```solidity
+function deposit(uint256 assets, address receiver) public override returns (uint256 shares);
 ```
+
+### purchaseTokens
+
+
+```solidity
+function purchaseTokens(uint256 amountETH) internal;
+```
+
+### swapETHForTokens
+
+
+```solidity
+function swapETHForTokens(address token, uint256 amountETH, uint256 amountOutMin) internal;
+```
+
+## Structs
+### Allocation
+
+```solidity
+struct Allocation {
+    address token;
+    uint256 percentage;
+}
+```
+
