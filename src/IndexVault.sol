@@ -15,7 +15,7 @@ contract AIVault is ERC4626, Ownable {
     }
 
     Allocation[] public allocations;
-    mapping(address => bool) public whitelist;
+    mapping(address => bool) public allowedTokens;
 
     constructor(IERC20 asset, address _uniswapRouterAddress) ERC4626(asset) {
         uniswapRouter = IUniswapV2Router02(_uniswapRouterAddress);
@@ -30,35 +30,38 @@ contract AIVault is ERC4626, Ownable {
         uint256 totalPercentage = 0;
 
         for (uint i = 0; i < newAllocations.length; ++i) {
-            require(whitelist[newAllocations[i].token], "Token not whitelisted");
-            require(newAllocations[i].percentage > 0, "Percentage must be greater than 0");
-            totalPercentage += newAllocations[i].percentage;
-            allocations.push(newAllocations[i]);
+            Allocation memory allocation = newAllocations[i];
+            require(whitelist[allocation.token], "Token not whitelisted");
+            require(allocation.percentage > 0, "Percentage must be greater than 0");
+            totalPercentage += allocation.percentage;
+            allocations.push(allocation);
         }
 
         require(totalPercentage == 10000, "Total percentage must equal 100%");
     }
 
     // Function to whitelist tokens
-    function addToWhitelist(address token) external onlyOwner {
+    function addToAllowedToken(address token) external onlyOwner {
         require(token != address(0), "Invalid token address");
-        whitelist[token] = true;
+        allowedTokens[token] = true;
     }
 
     // Override the deposit behavior
     function deposit(uint256 assets, address receiver) public override returns (uint256 shares) {
         shares = super.deposit(assets, receiver);
         purchaseTokens(assets);
+        mint(shares, receiver);
         return shares;
     }
 
     // Logic for purchasing tokens based on allocations
-    function purchaseTokens(uint256 amountETH) internal {
-        for (uint i = 0; i < allocations.length; i++) {
+    function purchaseTokens(uint256 amountETH, uint256 amountOutMin) internal {
+        uint length = allocations.length;
+        for (uint i = 0; i < length; ++i) {
             Allocation memory allocation = allocations[i];
             uint256 swapAmount = amountETH * allocation.percentage / 10000;
             require(swapAmount > 0, "Cannot swap for 0 tokens");
-            swapETHForTokens(allocation.token, swapAmount, 0); // 0 as minimum amount out for simplicity
+            swapETHForTokens(allocation.token, swapAmount, 0);
         }
     }
 

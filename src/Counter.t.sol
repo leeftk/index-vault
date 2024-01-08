@@ -11,9 +11,21 @@ contract AIVaultTest is Test {
     function setUp() public {
         // Initialize your AIVault contract with the Uniswap router address
         vault = new AIVault(uniswapRouterAddress);
+        vault.setAllocations([
+            Allocation({
+                token: '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
+                percentage: 5000
+            }),
+            Allocation({
+                token: 0x...,
+                percentage: 5000
+            })
+        ]);
+
     }
 
     function testSwapETHForTokens() public {
+
         // Arrange: Set up the necessary conditions for your test
         address tokenAddress = 0x...; // Replace with the actual token address you want to swap to
         uint256 amountETH = 1 ether;
