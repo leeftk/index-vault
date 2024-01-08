@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import "lib/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
-contract AIVault is ERC4626, Ownable {
+contract AIVault is Ownable {
     IUniswapV2Router02 uniswapRouter;
-
+    ERC20 public immutable asset_;
     struct Allocation {
         address token;
         uint256 percentage; // in basis points, 10000 = 100%
@@ -17,9 +17,10 @@ contract AIVault is ERC4626, Ownable {
     Allocation[] public allocations;
     mapping(address => bool) public allowedTokens;
 
-    constructor(IERC20 asset, address _uniswapRouterAddress) ERC4626(asset) {
-        uniswapRouter = IUniswapV2Router02(_uniswapRouterAddress);
+    constructor() ERC20("AIVault", "AIV"){
+        uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D); // Replace with the actual Uniswap V2 Router address
     }
+
 
     // Ensure the contract can receive ETH
     receive() external payable {}
@@ -31,7 +32,7 @@ contract AIVault is ERC4626, Ownable {
 
         for (uint i = 0; i < newAllocations.length; ++i) {
             Allocation memory allocation = newAllocations[i];
-            require(whitelist[allocation.token], "Token not whitelisted");
+            require(allowedTokens[allocation.token], "Token not whitelisted");
             require(allocation.percentage > 0, "Percentage must be greater than 0");
             totalPercentage += allocation.percentage;
             allocations.push(allocation);
@@ -50,7 +51,7 @@ contract AIVault is ERC4626, Ownable {
     function deposit(uint256 assets, address receiver) public override returns (uint256 shares) {
         shares = super.deposit(assets, receiver);
         purchaseTokens(assets);
-        mint(shares, receiver);
+        _mint(shares, receiver);
         return shares;
     }
 
